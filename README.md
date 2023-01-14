@@ -5,3 +5,10 @@
 
 # run MongoDB (i.e. the mongod process) manually as a background process, run:
 ```mongod --config /opt/homebrew/etc/mongod.conf --fork```
+
+# типы объекта объявлений объявлений
+-id 
+-date
+-author
+-category
+-content
