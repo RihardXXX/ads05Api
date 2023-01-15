@@ -6,11 +6,14 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const http = require('http');
 const express = require('express');
+const db = require('./db');
 const gql = require('graphql-tag');
 
+// Берем с переменной окружения порт, путь к апи, путь подключения в БД
 require('dotenv').config();
 const port = process.env.PORT || 4000;
 const api_url = process.env.API_URL || '/api';
+const DB_HOST = process.env.DB_HOST;
 
 // Необходимая логика для интеграции с Express
 const app = express();
@@ -18,6 +21,9 @@ const app = express();
 // Ниже мы указываем серверу Apollo «слить» этот http-сервер,
 // позволяя нашим серверам корректно завершать работу.
 const httpServer = http.createServer(app);
+
+// Подключаем БД
+db.connect(DB_HOST);
 
 let adsList = [
     { id: '1', content: 'This is a note', author: 'Adam Scott' },
