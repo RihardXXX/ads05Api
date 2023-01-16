@@ -7,7 +7,8 @@ const bodyParser = require('body-parser');
 const http = require('http');
 const express = require('express');
 const db = require('./db');
-const gql = require('graphql-tag');
+const typeDefs = require('./schema');
+const resolvers = require('./resolvers');
 
 // Берем с переменной окружения порт, путь к апи, путь подключения в БД
 require('dotenv').config();
@@ -24,51 +25,6 @@ const httpServer = http.createServer(app);
 
 // Подключаем БД
 db.connect(DB_HOST);
-
-let adsList = [
-    { id: '1', content: 'This is a note', author: 'Adam Scott' },
-    { id: '2', content: 'This is another note', author: 'Harlow Everly' },
-    { id: '3', content: 'Oh hey look, another note!', author: 'Riley Harrison' }
-];
-
-// описанная схема
-const typeDefs = gql`
-    type Query {
-        hello: String
-        ads: [ADVERT!]!
-        advert(id: String!): ADVERT!
-    },
-    type Mutation {
-        newAdvert(content: String!): ADVERT!
-    },
-    type ADVERT {
-        id: ID!
-        content: String!
-        author: String!
-    }
-`
-
-const resolvers = {
-    Query: {
-        hello: () => 'Hello graph ql',
-        ads: () => adsList,
-        advert: (parent, args) => {
-            return adsList.find(advert => advert.id === args.id);
-        },
-    },
-    Mutation: {
-        newAdvert: (parent, args) => {
-            const newItem ={
-                id: String(adsList.length + 1),
-                author: 'Rihard',
-                content: args.content
-            }
-
-            adsList.push(newItem);
-            return newItem;
-        }
-    },
-}
 
 // Та же инициализация ApolloServer, что и раньше, плюс подключаемый модуль стока
 // для нашего httpServer.
