@@ -10,8 +10,6 @@ const advert = new mongoose.Schema(
             // contact: { type: String, default: '' },
             // comments: [{}],
             // rating: { type: Number, default: 0 },
-            // created_at: Date,
-            // updated_at: { type: Date, default: Date.now },
         },  
         {
             // Присваиваем поля createdAt и updatedAt с типом данных

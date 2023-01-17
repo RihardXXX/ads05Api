@@ -1,26 +1,24 @@
 const gql = require('graphql-tag');
-// const { GraphQLInputObjectType, GraphQLID, GraphQLString  } = require('graphql');
-// const { input  } = require('graphql');
-
-// const Fields = new GraphQLInputObjectType({
-//     name: 'Fields',
-//     fields: () => ({
-//       author: { type: GraphQLString },
-//       content:    { type: GraphQLString }, 
-//     })
-//   });
 
 // описанная схема
 const typeDefs = gql`
+    scalar DateTime
+    type User {
+        id: ID!
+        username: String!
+        email: String!
+        avatar: String
+        ads: [ADVERT!]!
+    },
     type ADVERT {
         _id: ID!
-        author: String!
+        author: User!
         # category: String!
         content: String!
         # contact: String
         # rating: Int!
-        # created_at: String!
-        # updated_at: String!
+        createdAt: DateTime!
+        updatedAt: DateTime!
     },
     input ADVERTFIELD {
         author: String
@@ -34,6 +32,8 @@ const typeDefs = gql`
         newAdvert(content: String!): ADVERT!
         updateAdvert(id: ID!, fields: ADVERTFIELD): ADVERT!
         deleteAdvert(id: ID!): Boolean!
+        signUp(username: String!, email: String!, password: String!): String!
+        signIn(email: String, password: String!): String!
     },
 `
 
