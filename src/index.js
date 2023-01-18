@@ -9,9 +9,11 @@ const express = require('express');
 const db = require('./db');
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
+const { getUserId } = require('./util/utils');
 
 // Берем с переменной окружения порт, путь к апи, путь подключения в БД
 require('dotenv').config();
+
 const port = process.env.PORT || 4000;
 const api_url = process.env.API_URL || '/api';
 const DB_HOST = process.env.DB_HOST;
@@ -46,7 +48,11 @@ server
             // expressMiddleware принимает те же аргументы:
             // экземпляр сервера Apollo и дополнительные параметры конфигурации
             expressMiddleware(server, {
-            context: async ({ req }) => ({ token: req.headers.token }),
+                context: async ({ req }) => {
+                    const token =  req.headers.authorization;
+                    const { id: idUser } = getUserId(token);
+                    return { idUser };
+                },
             }),
         );
 

@@ -33,7 +33,7 @@ const typeDefs = gql`
         updateAdvert(id: ID!, fields: ADVERTFIELD): ADVERT!
         deleteAdvert(id: ID!): Boolean!
         signUp(username: String!, email: String!, password: String!): String!
-        signIn(email: String, password: String!): String!
+        signIn(email: String!, password: String!): String!
     },
 `
 
