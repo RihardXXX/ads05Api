@@ -4,7 +4,11 @@ const mongoose = require('mongoose');
 // Определяем схему БД объявление
 const advert = new mongoose.Schema(
         {
-            author: { type: String, required: true },
+            author: {  
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+                required: true, 
+            },
             // category: { type: String, required: true },
             content: { type: String, required: true },
             // contact: { type: String, default: '' },

@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { gravatar } = require('../util/gravatar');
 const { GraphQLError } = require('graphql');
-const { ApolloServerErrorCode } = require('@apollo/server/errors');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
 // example error
@@ -14,31 +14,103 @@ require('dotenv').config();
 //     },
 // });
 
-// if (error.extensions?.code === ApolloServerErrorCode.GRAPHQL_PARSE_FAILED)
 
 const Mutation = {
-    newAdvert: async (parent, args) => {
-        const newItem = {
-            author: 'Rihard',
+    newAdvert: async (parent, args, { idUser }) => {
+        if (!idUser) {
+            throw new GraphQLError('Вы не авторизованы', {
+                extensions: {
+                    code: '401',
+                    myExtension: "foo",
+                },
+            });
+        }
+
+        return await Advert.create({
+            author:  mongoose.Types.ObjectId(idUser),
             // category: 'JS',
             content: args.content,
             // contact: '112',
             // comments: [],
             // rating: 5,
+        });
+    },
+    deleteAdvert: async (parent, { id }, { idUser }) => {
+        if (!idUser) {
+            throw new GraphQLError('Вы не авторизованы', {
+                extensions: {
+                    code: '401',
+                    myExtension: "foo",
+                },
+            });
         }
 
-        return await Advert.create(newItem)
-    },
-    deleteAdvert: async (parent, { id }) => {
+        // Находим объявление
+        const advert = await Advert.findById(id);
+
+        // если не находим объявление такое
+        if (!advert) {
+            throw new GraphQLError('Объявления с таким айди не существует', {
+                extensions: {
+                    code: '400',
+                    myExtension: "foo",
+                },
+            });
+        }
+
+        // Если владелец заметки и текущий пользователь не совпадают, выбрасываем
+        // запрет на действие
+        if (String(advert.author) !== idUser) {
+            throw new GraphQLError('Вы не уполномочены удалять эту заметку', {
+                extensions: {
+                    code: '403',
+                    myExtension: "foo",
+                },
+            });
+        }
+
+
         try {
-            await Advert.findOneAndRemove({ _id: id});
+            await advert.remove();
             return true;
         } catch (error) {
             console.log('Mutation/deleteAdvert error: ', error);
             return false;
         }
     },
-    updateAdvert: async (parent, { id, fields }) => {
+    updateAdvert: async (parent, { id, fields }, { idUser }) => {
+        if (!idUser) {
+            throw new GraphQLError('Вы не авторизованы', {
+                extensions: {
+                    code: '401',
+                    myExtension: "foo",
+                },
+            });
+        }
+
+        // Находим объявление
+        const advert = await Advert.findById(id);
+
+        // если не находим объявление такое
+        if (!advert) {
+            throw new GraphQLError('Объявление с таким айди не существует', {
+                extensions: {
+                    code: '400',
+                    myExtension: "foo",
+                },
+            });
+        }
+
+        // Если владелец заметки и текущий пользователь не совпадают, выбрасываем
+        // запрет на действие
+        if (String(advert.author) !== idUser) {
+            throw new GraphQLError('Вы не уполномочены обновлять эту заметку', {
+                extensions: {
+                    code: '403',
+                    myExtension: "foo",
+                },
+            });
+        }
         try {
             return await Advert.findOneAndUpdate({ _id: id }, { $set: fields }, { new: true });
         } catch (error) {
