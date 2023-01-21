@@ -6,14 +6,6 @@ const { GraphQLError } = require('graphql');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-// example error
-// throw new GraphQLError("my message", {
-//     extensions: {
-//       code: 'FORBIDDEN',
-//       myExtension: "foo",
-//     },
-// });
-
 
 const Mutation = {
     newAdvert: async (parent, args, { idUser }) => {

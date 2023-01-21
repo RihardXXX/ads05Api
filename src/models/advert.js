@@ -6,14 +6,21 @@ const advert = new mongoose.Schema(
         {
             author: {  
                 type: mongoose.Schema.Types.ObjectId,
+                // связь с айди юзера
                 ref: 'User',
                 required: true, 
             },
-            // category: { type: String, required: true },
+            category: { type: String, required: true },
             content: { type: String, required: true },
-            // contact: { type: String, default: '' },
-            // comments: [{}],
-            // rating: { type: Number, default: 0 },
+            favoriteCount: { type: Number, default: 0 },
+            favoriteBy: [
+                {
+                    type: mongoose.Schema.Types.ObjectId,
+                    // связь с айди юзера
+                    ref: 'User'
+                }
+            ],
+            contact: { type: String, default: '' },
         },  
         {
             // Присваиваем поля createdAt и updatedAt с типом данных

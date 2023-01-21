@@ -19,7 +19,14 @@ const user = new mongoose.Schema(
         avatar: {
             type: String,
             default: '',
-        }
+        },
+        favorites: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                // айдишки с избранными 
+                ref: 'Advert'
+            }
+        ],
     },
     {
         // Присваиваем поля createdAt и updatedAt с типом Date

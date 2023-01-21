@@ -8,32 +8,38 @@ const typeDefs = gql`
         username: String!
         email: String!
         avatar: String
-        ads: [ADVERT!]!
+        favorites: [ADVERT!]
     },
     type ADVERT {
         _id: ID!
         author: User!
-        # category: String!
+        category: String!
         content: String!
-        # contact: String
-        # rating: Int!
+        contact: String
+        favoriteCount: Int!
+        favoriteBy: [User!]
         createdAt: DateTime!
         updatedAt: DateTime!
     },
     input ADVERTFIELD {
-        author: String
+        category: String
         content: String
+        contact: String
     }
     type Query {
         ads: [ADVERT!]!
         advert(id: String!): ADVERT!
+        user(username: String!): User
+        users: [User!]!
+        me: User!
     },
     type Mutation {
-        newAdvert(content: String!): ADVERT!
+        newAdvert(content: String!, category: String!, contact: String): ADVERT!
         updateAdvert(id: ID!, fields: ADVERTFIELD): ADVERT!
         deleteAdvert(id: ID!): Boolean!
         signUp(username: String!, email: String!, password: String!): String!
         signIn(email: String!, password: String!): String!
+        toggleFavorite(id: ID!): ADVERT!
     },
 `
 
