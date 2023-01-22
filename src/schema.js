@@ -8,38 +8,54 @@ const typeDefs = gql`
         username: String!
         email: String!
         avatar: String
-        favorites: [ADVERT!]
+        favorites: [Advert!]
+        adverts: [Advert!]!
     },
-    type ADVERT {
+    type Advert {
         _id: ID!
         author: User!
         category: String!
         content: String!
         contact: String
         favoriteCount: Int!
-        favoriteBy: [User!]
+        favoritedBy: [User!]
         createdAt: DateTime!
         updatedAt: DateTime!
     },
-    input ADVERTFIELD {
+    type Comment {
+        _id: ID!
+        author: User!
+        advert: Advert!
+        content: String!
+        createdAt: DateTime!
+        updatedAt: DateTime!
+    }
+    input Advertfield {
         category: String
         content: String
         contact: String
     }
     type Query {
-        ads: [ADVERT!]!
-        advert(id: String!): ADVERT!
+        ads: [Advert!]!
+        advert(id: String!): Advert!
         user(username: String!): User
+        userForId(id: ID!): User
         users: [User!]!
         me: User!
+        comment(id: String!): Comment!
+        comments: [Comment!]!
     },
     type Mutation {
-        newAdvert(content: String!, category: String!, contact: String): ADVERT!
-        updateAdvert(id: ID!, fields: ADVERTFIELD): ADVERT!
+        newAdvert(content: String!, category: String!, contact: String): Advert!
+        updateAdvert(id: ID!, fields: Advertfield): Advert!
         deleteAdvert(id: ID!): Boolean!
         signUp(username: String!, email: String!, password: String!): String!
         signIn(email: String!, password: String!): String!
-        toggleFavorite(id: ID!): ADVERT!
+        toggleFavorite(id: ID!): Advert!
+        newComment(content: String!, idAdvert: ID!): Comment!
+        updateComment(id: ID!, content: String!): Comment!
+        deleteComment(id: ID!): Boolean
+        vkAuth(login: String!): String!
     },
 `
 

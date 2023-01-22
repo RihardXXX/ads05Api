@@ -1,66 +1,42 @@
-const { Advert, User } = require('../models');
+const { Advert, User, Comment } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { gravatar } = require('../util/gravatar');
+const { errorAuth, errorField, errorNotItem, error403 } = require('../util/utils');
 const { GraphQLError } = require('graphql');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
 
 const Mutation = {
-    newAdvert: async (parent, args, { idUser }) => {
-        if (!idUser) {
-            throw new GraphQLError('Вы не авторизованы', {
-                extensions: {
-                    code: '401',
-                    myExtension: "foo",
-                },
-            });
-        }
+    newAdvert: async (parent, { content, category, contact }, { idUser }) => {
 
-        return await Advert.create({
-            author:  mongoose.Types.ObjectId(idUser),
-            // category: 'JS',
-            content: args.content,
-            // contact: '112',
-            // comments: [],
-            // rating: 5,
-        });
+        errorAuth(idUser);
+
+        errorField(content, category, 'Не переданы поля контент и категория');
+
+        return await Advert.create(
+            {
+                author:  mongoose.Types.ObjectId(idUser),
+                category,
+                content,
+                contact,
+            }
+        );
     },
     deleteAdvert: async (parent, { id }, { idUser }) => {
-        if (!idUser) {
-            throw new GraphQLError('Вы не авторизованы', {
-                extensions: {
-                    code: '401',
-                    myExtension: "foo",
-                },
-            });
-        }
+
+        errorAuth(idUser);
 
         // Находим объявление
         const advert = await Advert.findById(id);
 
         // если не находим объявление такое
-        if (!advert) {
-            throw new GraphQLError('Объявления с таким айди не существует', {
-                extensions: {
-                    code: '400',
-                    myExtension: "foo",
-                },
-            });
-        }
+        errorNotItem(advert, 'Такого объявления не существует');
 
         // Если владелец заметки и текущий пользователь не совпадают, выбрасываем
         // запрет на действие
-        if (String(advert.author) !== idUser) {
-            throw new GraphQLError('Вы не уполномочены удалять эту заметку', {
-                extensions: {
-                    code: '403',
-                    myExtension: "foo",
-                },
-            });
-        }
-
+        error403(idUser, advert, 'Вы не уполномочены удалять это объявление');
 
         try {
             await advert.remove();
@@ -71,38 +47,19 @@ const Mutation = {
         }
     },
     updateAdvert: async (parent, { id, fields }, { idUser }) => {
-        if (!idUser) {
-            throw new GraphQLError('Вы не авторизованы', {
-                extensions: {
-                    code: '401',
-                    myExtension: "foo",
-                },
-            });
-        }
+
+        errorAuth(idUser);
 
         // Находим объявление
         const advert = await Advert.findById(id);
 
         // если не находим объявление такое
-        if (!advert) {
-            throw new GraphQLError('Объявление с таким айди не существует', {
-                extensions: {
-                    code: '400',
-                    myExtension: "foo",
-                },
-            });
-        }
+        errorNotItem(advert, 'Такого объявления не существует');
 
         // Если владелец заметки и текущий пользователь не совпадают, выбрасываем
         // запрет на действие
-        if (String(advert.author) !== idUser) {
-            throw new GraphQLError('Вы не уполномочены обновлять эту заметку', {
-                extensions: {
-                    code: '403',
-                    myExtension: "foo",
-                },
-            });
-        }
+        error403(idUser, advert, 'Вы не уполномочены обновлять это объявление');
+
         try {
             return await Advert.findOneAndUpdate({ _id: id }, { $set: fields }, { new: true });
         } catch (error) {
@@ -141,14 +98,7 @@ const Mutation = {
 
         const user = await User.findOne({ email });
 
-        if (!user) {
-            throw new GraphQLError('Такого пользователя не существует', {
-                extensions: {
-                    code: '401',
-                    myExtension: "foo",
-                },
-            });
-        }
+        errorNotItem(user, 'Такого пользователя не существует');
 
         const validPassword = await bcrypt.compare(password, user.password);
 
@@ -164,6 +114,105 @@ const Mutation = {
         // return token
         return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
     },
+    toggleFavorite: async (parent, { id }, { idUser }) => {
+
+        errorAuth(idUser);
+        
+        // находим объявление
+        const advert = await Advert.findById(id);
+
+        // если не находим объявление такое
+        errorNotItem(advert, 'Такого объявления не существует');
+
+        // проверяем лайкал ли он ранее
+        const isLiked = advert.favoritedBy.includes(idUser);
+
+        if (isLiked) {
+            // убираем объявление из своего списка избранных
+            await User.findByIdAndUpdate(
+                idUser,
+                {
+                    $pull: {
+                        favorites: mongoose.Types.ObjectId(id)
+                    }
+                },
+                {
+                    // Устанавливаем new как true, чтобы вернуть обновленный документ
+                    new: true
+                }
+            )
+
+            // обновляем объявление
+            // убираем себя из спиcка и делаем инrремент
+            return await Advert.findByIdAndUpdate(
+                id,
+                {
+                    $pull: {
+                        favoritedBy: mongoose.Types.ObjectId(idUser)
+                    },
+                    $inc: {
+                        favoriteCount: -1
+                    }
+                },
+                {
+                    // Устанавливаем new как true, чтобы вернуть обновленный документ
+                    new: true
+                }
+            );
+        } else {
+            await User.findByIdAndUpdate(
+                idUser,
+                {
+                    $push: {
+                        favorites: mongoose.Types.ObjectId(id)
+                    }
+                },
+                {
+                    // Устанавливаем new как true, чтобы вернуть обновленный документ
+                    new: true
+                }
+            )
+
+            return await Advert.findByIdAndUpdate(
+                id,
+                {
+                    $push: {
+                        favoritedBy: mongoose.Types.ObjectId(idUser)
+                    },
+                    $inc: {
+                        favoriteCount: 1
+                    }
+                },
+                {
+                    new: true
+                }
+            );
+        }
+    },
+    newComment: async (parent, { content, idAdvert }, { idUser }) => {
+
+        errorAuth(idUser);
+
+        errorField(content, idAdvert, 'Не переданы поля контент и айди объявления');
+        
+        try {
+            return await Comment.create({
+                author: mongoose.Types.ObjectId(idUser),
+                advert: mongoose.Types.ObjectId(idAdvert),
+                content,
+            });
+        } catch (error) {
+            throw new GraphQLError('Ошибка создания комментария', {
+                extensions: {
+                    code: '500',
+                    myExtension: "foo",
+                },
+            });
+        }
+    },
+    updateComment: async (parent, { id, content }, { idUser }) => {
+
+    }
 };
 
 module.exports = Mutation;

@@ -13,7 +13,7 @@ const advert = new mongoose.Schema(
             category: { type: String, required: true },
             content: { type: String, required: true },
             favoriteCount: { type: Number, default: 0 },
-            favoriteBy: [
+            favoritedBy: [
                 {
                     type: mongoose.Schema.Types.ObjectId,
                     // связь с айди юзера
