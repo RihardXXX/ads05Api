@@ -2,10 +2,13 @@
 const { ApolloServer } = require('@apollo/server');
 const { expressMiddleware } = require('@apollo/server/express4');
 const { ApolloServerPluginDrainHttpServer } = require('@apollo/server/plugin/drainHttpServer');
+const depthLimit = require('graphql-depth-limit');
+const { createComplexityLimitRule } = require('graphql-validation-complexity');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const http = require('http');
 const express = require('express');
+const helmet = require("helmet");
 const db = require('./db');
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
@@ -20,6 +23,10 @@ const DB_HOST = process.env.DB_HOST;
 
 // Необходимая логика для интеграции с Express
 const app = express();
+// защита от уязвимостей
+app.use(helmet());
+// кросдоменные запросы
+app.use(cors());
 // Наш httpServer обрабатывает входящие запросы к нашему приложению Express.
 // Ниже мы указываем серверу Apollo «слить» этот http-сервер,
 // позволяя нашим серверам корректно завершать работу.
@@ -33,6 +40,7 @@ db.connect(DB_HOST);
 const server = new ApolloServer({
     typeDefs,
     resolvers,
+    validationRules: [depthLimit(5), createComplexityLimitRule(1000)],
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
 });
 

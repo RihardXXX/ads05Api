@@ -212,7 +212,61 @@ const Mutation = {
     },
     updateComment: async (parent, { id, content }, { idUser }) => {
 
-    }
+        errorAuth(idUser);
+
+        errorField(content, id, 'Не переданы поля айди объявления и контент');
+
+        // Находим комментарий
+        const comment = await Comment.findById(id);
+
+        // Если владелец заметки и текущий пользователь не совпадают, выбрасываем
+        // запрет на действие
+        error403(idUser, comment, 'Вы не уполномочены обновлять этот комментарий');
+
+        try {
+            return await Comment.findOneAndUpdate(
+                { _id: id }, 
+                { $set: {
+                        content
+                    } 
+                }, 
+                { new: true }
+            );
+        } catch (error) {
+            throw new GraphQLError('Ошибка в запросе на обновление комментария updateComment', {
+                extensions: {
+                    code: '400',
+                    myExtension: "foo",
+                },
+            });
+        }
+    },
+    deleteComment: async (parent, { id }, { idUser }) => {
+
+        errorAuth(idUser);
+
+        // Находим комментарий
+        const comment = await Comment.findById(id);
+
+        // если не находим объявление такое
+        errorNotItem(comment, 'Такого комментария не существует');
+
+        // Если владелец заметки и текущий пользователь не совпадают, выбрасываем
+        // запрет на действие
+        error403(idUser, comment, 'Вы не уполномочены удалять этот комментарий');
+
+        try {
+            await comment.remove();
+            return true;
+        } catch (error) {
+            throw new GraphQLError('Ошибка в запросе на удаление комментария deleteComment', {
+                extensions: {
+                    code: '400',
+                    myExtension: "foo",
+                },
+            });
+        }
+    },
 };
 
 module.exports = Mutation;

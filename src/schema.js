@@ -29,21 +29,32 @@ const typeDefs = gql`
         content: String!
         createdAt: DateTime!
         updatedAt: DateTime!
+    },
+    type AdvertFeed {
+        adverts: [Advert]!
+        cursor: String!
+        hasNextPage: Boolean!
+    },
+    type CommentFeed {
+        comments: [Comment]!
+        cursor: String!
+        hasNextPage: Boolean!
     }
     input Advertfield {
         category: String
         content: String
         contact: String
-    }
+    },
     type Query {
         ads: [Advert!]!
         advert(id: String!): Advert!
+        advertFeed(cursor: String): AdvertFeed
         user(username: String!): User
         userForId(id: ID!): User
         users: [User!]!
         me: User!
-        comment(id: String!): Comment!
-        comments: [Comment!]!
+        comment(id: ID!): Comment!
+        commentFeed(cursor: String, idAdvert: ID!): CommentFeed
     },
     type Mutation {
         newAdvert(content: String!, category: String!, contact: String): Advert!
