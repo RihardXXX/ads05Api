@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 const user = new mongoose.Schema(
     {
@@ -33,6 +34,9 @@ const user = new mongoose.Schema(
         timestamps: true
     }
 );
+
+// подключение плагина высокоуровневой пагинации
+user.plugin(mongoosePaginate);  
 
 // Экспортируем модуль
 module.exports = mongoose.model('User', user);

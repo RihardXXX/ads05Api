@@ -8,7 +8,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const http = require('http');
 const express = require('express');
-const helmet = require("helmet");
+// const helmet = require("helmet");
 const db = require('./db');
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
@@ -24,8 +24,11 @@ const DB_HOST = process.env.DB_HOST;
 // Необходимая логика для интеграции с Express
 const app = express();
 // защита от уязвимостей
-app.use(helmet());
-// кросдоменные запросы
+
+// Внимание обязательно на проде подрубить helmet  для безопасности
+
+// app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+// // кросдоменные запросы
 app.use(cors());
 // Наш httpServer обрабатывает входящие запросы к нашему приложению Express.
 // Ниже мы указываем серверу Apollo «слить» этот http-сервер,
@@ -40,6 +43,7 @@ db.connect(DB_HOST);
 const server = new ApolloServer({
     typeDefs,
     resolvers,
+    // избежать большого количества вложеных запросов
     validationRules: [depthLimit(5), createComplexityLimitRule(1000)],
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
 });
@@ -51,15 +55,19 @@ server
         // и наша функция expressMiddleware.
         app.use(
             api_url,
-            cors(),
+            cors({ origin: [`http://localhost:${port}${api_url}`, 'https://studio.apollographql.com'] }),
             bodyParser.json(),
             // expressMiddleware принимает те же аргументы:
             // экземпляр сервера Apollo и дополнительные параметры конфигурации
             expressMiddleware(server, {
                 context: async ({ req }) => {
                     const token =  req.headers.authorization;
-                    const { id: idUser } = getUserId(token);
-                    return { idUser };
+                    // без этой проверки все приложение крашится
+                    if (token) {
+                        const { id: idUser } = getUserId(token);
+                        return { idUser };
+                    }
+                    return { token: req.headers.token };
                 },
             }),
         );

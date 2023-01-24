@@ -32,13 +32,15 @@ const typeDefs = gql`
     },
     type AdvertFeed {
         adverts: [Advert]!
-        cursor: String!
+        totalAdverts: Int!
         hasNextPage: Boolean!
+        nextPage: Int!
     },
     type CommentFeed {
         comments: [Comment]!
-        cursor: String!
+        totalComments: Int!
         hasNextPage: Boolean!
+        nextPage: Int!
     }
     input Advertfield {
         category: String
@@ -48,13 +50,13 @@ const typeDefs = gql`
     type Query {
         ads: [Advert!]!
         advert(id: String!): Advert!
-        advertFeed(cursor: String): AdvertFeed
+        advertFeed(page: Int!, limit: Int!): AdvertFeed
         user(username: String!): User
         userForId(id: ID!): User
         users: [User!]!
         me: User!
         comment(id: ID!): Comment!
-        commentFeed(cursor: String, idAdvert: ID!): CommentFeed
+        commentFeed(page: Int!, limit: Int!): CommentFeed
     },
     type Mutation {
         newAdvert(content: String!, category: String!, contact: String): Advert!
