@@ -1,6 +1,6 @@
 const { Advert, User, Comment } = require('../models');
 const { GraphQLError } = require('graphql');
-const { errorAuth, errorField, errorNotItem, error403 } = require('../util/utils');
+const { errorAuth, errorField, errorNotItem, error403, isEmptyObject } = require('../util/utils');
 
 const Query = {
     ads: async (parent, args) => {
@@ -17,66 +17,44 @@ const Query = {
             console.log('Query/advert error: ', error);
         }
     },
-    advertFeed: async (parent, { page, limit }) => {
-        // const myCustomLabels = {
-        //     totalDocs: 'totalAdverts',
-        //     docs: 'adverts',
-        // };
+    advertFeed: async (parent, { offset, limit }) => {
+        const myCustomLabels = {
+            totalDocs: 'totalAdverts',
+            docs: 'adverts',
+        };
           
-        // const options = {
-        //     page,
-        //     limit,
-        //     customLabels: myCustomLabels,
-        // };
+        const options = {
+            offset,
+            limit,
+            customLabels: myCustomLabels,
+        };
 
-        // const res = await Advert.paginate({}, options);
+        try {
+            const res = await Advert.paginate({}, options);
 
-        // console.log('res: ', res);
-
-        // Advert.paginate({}, options, function (err, result) {
-        //     if (result) {
-        //         console.log('result: ', result);
-        //         return {
-        //             adverts: result.adverts,
-        //             totalAdverts: result.paginator.totalAdverts,
-        //             hasNextPage: result.paginator.hasNextPage,
-        //             nextPage: result.paginator.nextPage
-        //         }
-        //     }
-        // });
-        // const limit = 10;
-        // let hasNextPage = false;
-        // // Если курсор передан не будет, то по умолчанию запрос будет пуст
-        // // В таком случае из БД будут извлечены последние заметки
-        // let cursorQuery = {};
-
-        // // Если курсор задан, запрос будет искать заметки со значением ObjectId
-        // // меньше этого курсора
-        // if (cursor) {
-        //     cursorQuery = { _id: { $lt: cursor } };
-        // }   
-            
-        // // Находим в БД limit + 1 заметок, сортируя их от старых к новым
-        // let adverts = await Advert.find(cursorQuery)
-        //     .sort({ _id: -1 })
-        //     .limit(limit + 1);
-
-        // // Если число найденных заметок превышает limit, устанавливаем
-        // // hasNextPage как true и обрезаем заметки до лимита
-        // if (adverts.length > limit) {
-        //     hasNextPage = true;
-        //     adverts = adverts.slice(0, -1);
-        // }
-        
-        // // Новым курсором будет ID Mongo-объекта последнего элемента массива списка
-        // const newCursor = adverts[adverts.length - 1]._id;
-
-        // return {
-        //     adverts,
-        //     cursor: newCursor,
-        //     hasNextPage
-        // };
-
+            if (isEmptyObject(res)) {
+                return {
+                    message: 'отсутствуют объявления'
+                }
+            }
+    
+            return {
+                totalAdverts: res.totalAdverts,
+                hasNextPage: res.hasNextPage,
+                nextPage: res.nextPage,
+                adverts: res.adverts,
+                offset: res.offset,
+                limit: res.limit,
+                page: res.page,
+            }
+        } catch (error) {
+            throw new GraphQLError('Ошибка при запросе на получение фида объявлений', {
+                extensions: {
+                    code: '500',
+                    myExtension: "foo",
+                },
+            });
+        }
     },
      // Добавляем в существующий объект module.exports следующее:
     user: async (parent, { username }) => {

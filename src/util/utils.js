@@ -63,10 +63,20 @@ const errorNotItem = (item, message) => {
     }
 }
 
+// empty object
+const isEmptyObject = (obj) => {
+    for (let key in obj) {
+      // если тело цикла начнет выполняться - значит в объекте есть свойства
+      return false;
+    }
+    return true;
+}
+
 module.exports = {
     getUserId,
     errorAuth,
     errorField,
     error403,
     errorNotItem,
+    isEmptyObject,
 }

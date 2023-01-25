@@ -34,13 +34,19 @@ const typeDefs = gql`
         adverts: [Advert]!
         totalAdverts: Int!
         hasNextPage: Boolean!
-        nextPage: Int!
+        nextPage: Int
+        offset: Int!
+        limit: Int!
+        page: Int!
     },
     type CommentFeed {
         comments: [Comment]!
         totalComments: Int!
         hasNextPage: Boolean!
-        nextPage: Int!
+        nextPage: Int
+        offset: Int!
+        limit: Int!
+        page: Int!
     }
     input Advertfield {
         category: String
@@ -50,7 +56,7 @@ const typeDefs = gql`
     type Query {
         ads: [Advert!]!
         advert(id: String!): Advert!
-        advertFeed(page: Int!, limit: Int!): AdvertFeed
+        advertFeed(offset: Int!, limit: Int!): AdvertFeed
         user(username: String!): User
         userForId(id: ID!): User
         users: [User!]!
