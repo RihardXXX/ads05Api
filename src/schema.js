@@ -14,6 +14,7 @@ const typeDefs = gql`
     type Advert {
         _id: ID!
         author: User!
+        name: String!
         category: String!
         content: String!
         contact: String
@@ -41,7 +42,7 @@ const typeDefs = gql`
     },
     type CommentFeed {
         comments: [Comment]!
-        totalComments: Int!
+        totalComments: Int
         hasNextPage: Boolean!
         nextPage: Int
         offset: Int!
@@ -49,6 +50,7 @@ const typeDefs = gql`
         page: Int!
     }
     input Advertfield {
+        name: String
         category: String
         content: String
         contact: String
@@ -62,10 +64,10 @@ const typeDefs = gql`
         users: [User!]!
         me: User!
         comment(id: ID!): Comment!
-        commentFeed(page: Int!, limit: Int!): CommentFeed
+        commentFeed(offset: Int!, limit: Int!, idAdvert: ID!): CommentFeed
     },
     type Mutation {
-        newAdvert(content: String!, category: String!, contact: String): Advert!
+        newAdvert(name: String!, content: String!, category: String!, contact: String): Advert!
         updateAdvert(id: ID!, fields: Advertfield): Advert!
         deleteAdvert(id: ID!): Boolean!
         signUp(username: String!, email: String!, password: String!): String!

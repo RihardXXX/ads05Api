@@ -122,39 +122,51 @@ const Query = {
             });
         }
     },
-    commentFeed: async (parent, { cursor, idAdvert }) => {
-        const limit = 10;
-        let hasNextPage = false;
-        // Если курсор передан не будет, то по умолчанию запрос будет пуст
-        // В таком случае из БД будут извлечены последние заметки
-        let cursorQuery = {};
+    commentFeed: async (parent, { offset, limit, idAdvert }) => {
 
-        // Если курсор задан, запрос будет искать заметки со значением ObjectId
-        // меньше этого курсора
-        if (cursor) {
-            cursorQuery = { _id: { $lt: cursor }, advert: { idAdvert } };
-        }   
-            
-        // Находим в БД limit + 1 заметок, сортируя их от старых к новым
-        let comments = await Comment.find(cursorQuery)
-            .sort({ _id: -1 })
-            .limit(limit + 1);
-
-        // Если число найденных заметок превышает limit, устанавливаем
-        // hasNextPage как true и обрезаем заметки до лимита
-        if (comments.length > limit) {
-            hasNextPage = true;
-            comments = comments.slice(0, -1);
-        }
-        
-        // Новым курсором будет ID Mongo-объекта последнего элемента массива списка
-        const newCursor = comments[comments.length - 1]._id;
-        
-        return {
-            comments,
-            cursor: newCursor,
-            hasNextPage
+        const myCustomLabels = {
+            totalDocs: 'totalComments',
+            docs: 'comments',
         };
+          
+        const options = {
+            offset,
+            limit,
+            customLabels: myCustomLabels,
+        };
+
+        const query = {
+            advert: idAdvert
+        };   
+
+        try {
+            const res = await Comment.paginate(query, options);
+
+            if (isEmptyObject(res)) {
+                return {
+                    message: 'отсутствуют комментарии'
+                }
+            }
+
+            // console.log(res);
+    
+            return {
+                totalComments: res.totalComments,
+                hasNextPage: res.hasNextPage,
+                nextPage: res.nextPage,
+                comments: res.comments,
+                offset: res.offset,
+                limit: res.limit,
+                page: res.page,
+            }
+        } catch (error) {
+            throw new GraphQLError('Ошибка при запросе на получение фида комментариев', {
+                extensions: {
+                    code: '500',
+                    myExtension: "foo",
+                },
+            });
+        }
     }
 };
 

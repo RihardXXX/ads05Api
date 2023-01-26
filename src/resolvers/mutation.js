@@ -9,7 +9,7 @@ require('dotenv').config();
 
 
 const Mutation = {
-    newAdvert: async (parent, { content, category, contact }, { idUser }) => {
+    newAdvert: async (parent, { name, content, category, contact }, { idUser }) => {
 
         errorAuth(idUser);
 
@@ -18,6 +18,7 @@ const Mutation = {
         return await Advert.create(
             {
                 author:  mongoose.Types.ObjectId(idUser),
+                name,
                 category,
                 content,
                 contact,
