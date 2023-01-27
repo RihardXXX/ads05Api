@@ -1,6 +1,9 @@
 const { Advert, User, Comment } = require('../models');
 const { GraphQLError } = require('graphql');
 const { errorAuth, errorField, errorNotItem, error403, isEmptyObject } = require('../util/utils');
+const nodemailer = require("nodemailer");
+// Берем с переменной окружения порт, путь к апи, путь подключения в БД
+require('dotenv').config();
 
 const Query = {
     ads: async (parent, args) => {
@@ -12,7 +15,11 @@ const Query = {
     },
     advert: async (parent, args) => {
         try {
-            return await Advert.findById(args.id);   
+            const advert = await Advert.findById(args.id);
+            // при запросе добавлять поле просмотренные
+            advert.watch += 1;
+            await advert.save();
+            return advert;
         } catch (error) {
             console.log('Query/advert error: ', error);
         }
@@ -167,7 +174,46 @@ const Query = {
                 },
             });
         }
-    }
+    },
+    testMailer: async (parent, { email, message }) => {
+
+        try {
+            const user = process.env.LOGIN;
+            const pass = process.env.PASSWORD;
+
+            // console.log(user);
+            // console.log(pass);
+            
+            const transporter = nodemailer.createTransport({
+                host: "smtp.mail.ru",
+                port: 465,
+                secure: true, // true for 465, false for other ports
+                auth: {
+                  user, // generated ethereal user
+                  pass, // generated ethereal password
+                }
+            });
+
+            let info = await transporter.sendMail({
+                from: user,
+                to: email, 
+                subject: "Hello ✔", 
+                text: "Hello world?", 
+                html: `<b>${message}</b>`,
+              });
+            
+              console.log("Message sent: %s", info.messageId);
+              // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+            
+              // Preview only available when sending through an Ethereal account
+              console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+              // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+              return true;
+        } catch (error) {
+            console.log('error testMailer: ', error);
+            return false;
+        }
+    },
 };
 
 module.exports = Query;

@@ -23,6 +23,7 @@ const advert = new mongoose.Schema(
             }
         ],
         contact: { type: String, default: '' },
+        watch: { type: Number, default: 0 },
     },  
     {
         // Присваиваем поля createdAt и updatedAt с типом данных

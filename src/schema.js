@@ -20,6 +20,7 @@ const typeDefs = gql`
         contact: String
         favoriteCount: Int!
         favoritedBy: [User!]
+        watch: Int!
         createdAt: DateTime!
         updatedAt: DateTime!
     },
@@ -65,6 +66,7 @@ const typeDefs = gql`
         me: User!
         comment(id: ID!): Comment!
         commentFeed(offset: Int!, limit: Int!, idAdvert: ID!): CommentFeed
+        testMailer(email: String!, message: String!): Boolean!
     },
     type Mutation {
         newAdvert(name: String!, content: String!, category: String!, contact: String): Advert!
