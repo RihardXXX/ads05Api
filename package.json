@@ -40,7 +40,8 @@
     "nodemailer": "^6.9.0",
     "nodemon": "1.18.7",
     "passport": "0.4.0",
-    "passport-github2": "0.1.11"
+    "passport-github2": "0.1.11",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "eslint": "5.13.0",

@@ -28,6 +28,11 @@ const user = new mongoose.Schema(
                 ref: 'Advert'
             }
         ],
+        // если авторизовываешься через почту то нужно подтвердить свой профиль
+        confirmed: {
+            type: Boolean,
+            default: false,
+        }
     },
     {
         // Присваиваем поля createdAt и updatedAt с типом Date

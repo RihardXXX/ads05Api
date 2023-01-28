@@ -5,7 +5,14 @@ const { gravatar } = require('../util/gravatar');
 const { errorAuth, errorField, errorNotItem, error403 } = require('../util/utils');
 const { GraphQLError } = require('graphql');
 const mongoose = require('mongoose');
+const nodemailer = require("nodemailer");
+const { v4: uuidv4 } = require('uuid');
+// Берем с переменной окружения порт, путь к апи, путь подключения в БД
 require('dotenv').config();
+
+const port = process.env.PORT || 4000;
+const api_url = process.env.API_URL || '/api';
+const domain = process.env.DOMAIN || 'http://localhost:';
 
 
 const Mutation = {
@@ -78,15 +85,22 @@ const Mutation = {
             const avatar = gravatar(email); 
 
             // create user
-            const user = await User.create({
-                username,
-                email,
-                avatar,
-                password: hash,
-            })
+            // const user = await User.create({
+            //     username,
+            //     email,
+            //     avatar,
+            //     password: hash,
+            // })
+
+            // create link
+            const uniquePath = uuidv4();
+            const urlForMail = `${domain}${port}/confirm/${uniquePath}`;
+            console.log('urlForMail: ', urlForMail);
+            // create GenerateLink model
+            // send email user link
 
             // return token
-            return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+            // return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
         } catch (error) {
             console.log(error)
             throw new Error('Mutation/signUp error create user');

@@ -13,6 +13,7 @@ const db = require('./db');
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
 const { getUserId } = require('./util/utils');
+const { confirmUser } = require('./confirmUser');
 
 // Берем с переменной окружения порт, путь к апи, путь подключения в БД
 require('dotenv').config();
@@ -20,6 +21,7 @@ require('dotenv').config();
 const port = process.env.PORT || 4000;
 const api_url = process.env.API_URL || '/api';
 const DB_HOST = process.env.DB_HOST;
+const domain = process.env.DOMAIN || 'http://localhost:';
 
 // Необходимая логика для интеграции с Express
 const app = express();
@@ -30,6 +32,11 @@ const app = express();
 // app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 // // кросдоменные запросы
 app.use(cors());
+
+// для подтверждения авторизации ссылка с почты
+// это отдельный роут который будет менять статус юзера на подтвержден
+app.get('/confirm/:idConfirm', confirmUser);
+
 // Наш httpServer обрабатывает входящие запросы к нашему приложению Express.
 // Ниже мы указываем серверу Apollo «слить» этот http-сервер,
 // позволяя нашим серверам корректно завершать работу.
@@ -55,7 +62,7 @@ server
         // и наша функция expressMiddleware.
         app.use(
             api_url,
-            cors({ origin: [`http://localhost:${port}${api_url}`, 'https://studio.apollographql.com'] }),
+            cors({ origin: [`${domain}${port}${api_url}`, 'https://studio.apollographql.com'] }),
             bodyParser.json(),
             // expressMiddleware принимает те же аргументы:
             // экземпляр сервера Apollo и дополнительные параметры конфигурации
@@ -75,7 +82,8 @@ server
         // Модифицированный запуск сервера
         await new Promise((resolve) => httpServer.listen({ port }, resolve));
 
-        console.log(`🚀 Server Graphql ready at http://localhost:${port}${api_url}`);
+        console.log(`🚀 Server Graphql ready at ${domain}${port}${api_url}`);
+
     })
     .catch(e => {
         console.log('server start failed: ', e);

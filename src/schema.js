@@ -10,6 +10,7 @@ const typeDefs = gql`
         avatar: String
         favorites: [Advert!]
         adverts: [Advert!]!
+        confirmed: Boolean!
     },
     type Advert {
         _id: ID!
