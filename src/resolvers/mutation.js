@@ -1,4 +1,4 @@
-const { Advert, User, Comment } = require('../models');
+const { Advert, User, Comment, GenerateLink } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { gravatar } = require('../util/gravatar');
@@ -85,22 +85,62 @@ const Mutation = {
             const avatar = gravatar(email); 
 
             // create user
-            // const user = await User.create({
-            //     username,
-            //     email,
-            //     avatar,
-            //     password: hash,
-            // })
+            const user = await User.create({
+                username,
+                email,
+                avatar,
+                password: hash,
+            })
 
-            // create link
+            // create link for confirmed by email
             const uniquePath = uuidv4();
             const urlForMail = `${domain}${port}/confirm/${uniquePath}`;
-            console.log('urlForMail: ', urlForMail);
+            // console.log('urlForMail: ', urlForMail);
             // create GenerateLink model
+            await GenerateLink.create({
+                link: uniquePath,
+                user: user._id
+            });
             // send email user link
+            const userLogin = process.env.LOGIN;
+            const pass = process.env.PASSWORD;
+            
+            const transporter = nodemailer.createTransport({
+                host: "smtp.mail.ru",
+                port: 465,
+                secure: true, // true for 465, false for other ports
+                auth: {
+                  user: userLogin, // generated ethereal user
+                  pass, // generated ethereal password
+                }
+            });
+
+            try {
+                let info = await transporter.sendMail({
+                    from: userLogin,
+                    to: email, 
+                    subject: 'Подтверждение авторизации', 
+                    text: 'ads', 
+                    html: `Пожалуйста перейдите по ссылке, чтобы подтвердить авторизацию и получить 
+                        весь функционал приложения <a target="_blank" href="${urlForMail}">подтверждение авторизации</a>. Перейдите по пути ${urlForMail}`,
+                });
+                // console.log("Message sent: %s", info.messageId);
+                // // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+              
+                // // Preview only available when sending through an Ethereal account
+                // console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+                // // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+            } catch (error) {
+                throw new GraphQLError('Такой почты не существует', {
+                    extensions: {
+                        code: '401',
+                        myExtension: "foo",
+                    },
+                });
+            }
 
             // return token
-            // return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+            return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
         } catch (error) {
             console.log(error)
             throw new Error('Mutation/signUp error create user');
