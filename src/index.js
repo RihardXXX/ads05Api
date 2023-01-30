@@ -14,7 +14,7 @@ const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
 const { getUserId } = require('./util/utils');
 const { confirmUser } = require('./confirmUser');
-
+const { changePasswordUser } = require('./changePasswordUser');
 // Берем с переменной окружения порт, путь к апи, путь подключения в БД
 require('dotenv').config();
 
@@ -39,6 +39,8 @@ app.set('view engine', 'pug');
 // для подтверждения авторизации ссылка с почты
 // это отдельный роут который будет менять статус юзера на подтвержден
 app.get('/confirm/:idConfirm', confirmUser);
+// это отдельный роут который будет менять пароль юзера 
+app.get('/changePassword', changePasswordUser);
 
 // Наш httpServer обрабатывает входящие запросы к нашему приложению Express.
 // Ниже мы указываем серверу Apollo «слить» этот http-сервер,

@@ -1,4 +1,4 @@
-const { Advert, User, Comment, GenerateLink } = require('../models');
+const { Advert, User, Comment, GenerateLink, ChangePassword } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { gravatar } = require('../util/gravatar');
@@ -320,6 +320,49 @@ const Mutation = {
                     myExtension: "foo",
                 },
             });
+        }
+    },
+    requestLinkForPassword: async (parent, { email }) => {
+        // console.log(email);
+        try {
+            // create link for confirmed by email
+            const uniquePath = uuidv4();
+            const urlForPassword = `${domain}${port}/changePassword/?email=${email}&path=${uniquePath}`;
+
+            await ChangePassword.create({
+                link: uniquePath,
+                email,
+            });
+
+            const userLogin = process.env.LOGIN;
+            const pass = process.env.PASSWORD;
+            
+            const transporter = nodemailer.createTransport({
+                host: "smtp.mail.ru",
+                port: 465,
+                secure: true, // true for 465, false for other ports
+                auth: {
+                  user: userLogin, // generated ethereal user
+                  pass, // generated ethereal password
+                }
+            });
+
+
+            let info = await transporter.sendMail({
+                from: userLogin,
+                to: email, 
+                subject: 'Смена Пароля', 
+                text: 'ads', 
+                html: `Пожалуйста перейдите по ссылке, чтобы 
+                    сменить пароль <a target="_blank" href="${urlForPassword}">Смена пароля</a>. 
+                    Перейдите по пути ${urlForPassword}`,
+            });
+
+
+            // console.log(urlForPassword);
+            return true;
+        } catch (error) {
+            return false;
         }
     },
 };

@@ -80,6 +80,7 @@ const typeDefs = gql`
         updateComment(id: ID!, content: String!): Comment!
         deleteComment(id: ID!): Boolean
         vkAuth(login: String!): String!
+        requestLinkForPassword(email: String!): Boolean!
     },
 `
 
