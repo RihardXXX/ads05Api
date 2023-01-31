@@ -6,6 +6,11 @@ const changePasswordUser = async (req, res) => {
 
     console.log(email);
     console.log(path);
+    // взять верстку для формы готовую
+    // подключить js
+    // сделатиь валидацию
+    // написать роут для смены пароля  
+    
     // Вернуть шаблон с формой для смены пароля
     // в шаблон отправить и почту
     // в шаблоне через обычный js сделать валидацию
@@ -29,8 +34,9 @@ const changePasswordUser = async (req, res) => {
     //     await user.save();
     //     message = 'Вы подтвердели авторизацию, вернитесь в приложение и обновитесь в нем';
     // }
+    const title = 'Форма для сменя пароля';
 
-    res.send('ok');
+    res.render('formChangePassword', { title });
 }
 
 module.exports = { changePasswordUser };
