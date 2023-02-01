@@ -1,6 +1,9 @@
 console.log(112);
+const axios = require('axios');
 
 window.addEventListener('DOMContentLoaded', (event) => {
+
+
     const modal = document.getElementById('myModal');
     const message = document.querySelector('.message');
     const close = document.querySelector('.close');
@@ -34,8 +37,17 @@ window.addEventListener('DOMContentLoaded', (event) => {
             modal.style.display = 'block';
             return
         }
-        
-        console.log(password);
-        console.log(repeatPassword);
+
+
+
+        const newData = { ...data, password };
+
+        axios.post('/user', newData)
+          .then(function (response) {
+            console.log(response);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
     })
 });

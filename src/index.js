@@ -41,6 +41,11 @@ app.set('view engine', 'pug');
 app.get('/confirm/:idConfirm', confirmUser);
 // это отдельный роут который будет менять пароль юзера 
 app.get('/changePassword', changePasswordUser);
+// роут который непосредственно меняет пароль
+app.post('/hidden', (req, res) => {
+    // тут сделать обязательную проверку на сгенерированный путь
+    console.log(req);
+})
 
 // Наш httpServer обрабатывает входящие запросы к нашему приложению Express.
 // Ниже мы указываем серверу Apollo «слить» этот http-сервер,
