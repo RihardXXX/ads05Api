@@ -14,7 +14,7 @@ const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
 const { getUserId } = require('./util/utils');
 const { confirmUser } = require('./confirmUser');
-const { changePasswordUser } = require('./changePasswordUser');
+const { changePasswordUser, setNewPassword } = require('./changePasswordUser');
 // Берем с переменной окружения порт, путь к апи, путь подключения в БД
 require('dotenv').config();
 
@@ -36,16 +36,17 @@ app.use(cors());
 // подключаем шаблонизатор паг
 app.set('view engine', 'pug');
 
+// подключаем бодит парсер для пост запросов
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json())
+
 // для подтверждения авторизации ссылка с почты
 // это отдельный роут который будет менять статус юзера на подтвержден
 app.get('/confirm/:idConfirm', confirmUser);
 // это отдельный роут который будет менять пароль юзера 
 app.get('/changePassword', changePasswordUser);
 // роут который непосредственно меняет пароль
-app.post('/hidden', (req, res) => {
-    // тут сделать обязательную проверку на сгенерированный путь
-    console.log(req);
-})
+app.post('/hidden', setNewPassword);
 
 // Наш httpServer обрабатывает входящие запросы к нашему приложению Express.
 // Ниже мы указываем серверу Apollo «слить» этот http-сервер,

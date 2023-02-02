@@ -1,5 +1,4 @@
 console.log(112);
-const axios = require('axios');
 
 window.addEventListener('DOMContentLoaded', (event) => {
 
@@ -40,11 +39,20 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
 
 
-        const newData = { ...data, password };
+        axios.post('/hidden', {
+            password,
+            email: data.email,
+            path: data.path,
 
-        axios.post('/user', newData)
+        })
           .then(function (response) {
-            console.log(response);
+            // console.log(response);
+            if (response.data === 'ok') {
+                message.textContent = 'Пароль изменен';
+                modal.style.display = 'block';
+                setTimeout(() => window.close(), 3000);
+                return
+            }
           })
           .catch(function (error) {
             console.log(error);
