@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
 
+var validateEmail = function(email) {
+    var re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    return re.test(email)
+};
+
 const user = new mongoose.Schema(
     {
         username: {
@@ -11,7 +16,8 @@ const user = new mongoose.Schema(
         email: {
             type: String,
             required: true,
-            index: { unique: true }
+            index: { unique: true },
+            validate: [validateEmail, 'Введите правильный формат электронной почты'],
         },
         password: {
             type: String,

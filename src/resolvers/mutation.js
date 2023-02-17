@@ -77,6 +77,31 @@ const Mutation = {
     signUp: async (parent, { username, email, password }) => {
         try {
 
+            if (!username) {
+                throw new GraphQLError('username: поле имя пользователя является обязательным');
+            }
+
+            if (username.length > 30) {
+                throw new GraphQLError('username: имя пользователя не может быть больше 30 символов');
+            }
+
+            if (username.length < 5) {
+                throw new GraphQLError('username: имя пользователя не может быть меньше 5 символов');
+            }
+
+            if (!email) {
+                throw new GraphQLError('email: поле электронная почта является обязательным');
+            }
+
+            if (!password) {
+                throw new GraphQLError('password: поле пароль является обязательным');
+            }
+
+            if (password.length < 5) {
+                throw new GraphQLError('password: поле пароль не может содержать меньше 5 символов');
+            }
+
+
             // normalize email
             email = email.trim().toLowerCase();
             // generate hash password
@@ -142,8 +167,32 @@ const Mutation = {
             // return token
             return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
         } catch (error) {
-            console.log(error)
-            throw new Error('Mutation/signUp error create user');
+            // custom error for client
+            if (error.code === 11000) {
+
+                const pattern = {
+                    username: 'имя',
+                    email: 'почта',
+                }
+
+                const name =  pattern[Object.keys(error.keyValue)];
+                const value = Object.values(error.keyValue);
+
+                const message = `${name} ${value} уже существует`;
+                throw new GraphQLError(message, {
+                    extensions: {
+                        code: '500',
+                        myExtension: "foo",
+                    },
+                });
+            } else {
+                throw new GraphQLError(error, {
+                    extensions: {
+                        code: '500',
+                        myExtension: "foo",
+                    },
+                });
+            }
         }
     },
     signIn: async (parent, { email, password }) => {
