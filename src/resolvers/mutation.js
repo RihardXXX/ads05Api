@@ -16,6 +16,7 @@ const domain = process.env.DOMAIN || 'http://localhost:';
 
 
 const Mutation = {
+
     newAdvert: async (parent, { name, content, category, contact }, { idUser }) => {
 
         errorAuth(idUser);
@@ -32,6 +33,7 @@ const Mutation = {
             }
         );
     },
+
     deleteAdvert: async (parent, { id }, { idUser }) => {
 
         errorAuth(idUser);
@@ -54,6 +56,7 @@ const Mutation = {
             return false;
         }
     },
+
     updateAdvert: async (parent, { id, fields }, { idUser }) => {
 
         errorAuth(idUser);
@@ -74,6 +77,7 @@ const Mutation = {
             console.log('Mutation/updateAdvert error: ', error);
         }
     },
+
     signUp: async (parent, { username, email, password }) => {
         try {
 
@@ -122,7 +126,7 @@ const Mutation = {
             const urlForMail = `${domain}${port}/confirm/${uniquePath}`;
             // console.log('urlForMail: ', urlForMail);
             // create GenerateLink model
-            await GenerateLink.create({
+            const linkBD = await GenerateLink.create({
                 link: uniquePath,
                 user: user._id
             });
@@ -156,7 +160,12 @@ const Mutation = {
                 // console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
                 // // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
             } catch (error) {
-                throw new GraphQLError('Такой почты не существует', {
+                // console.log(112, error.message);
+                // если такой почты не существует значит он не получит токен поэтому его надо удалить с БД
+                await user.remove();
+                await linkBD.remove();
+
+                throw new GraphQLError('email: Такой почты не существует', {
                     extensions: {
                         code: '401',
                         myExtension: "foo",
@@ -169,16 +178,10 @@ const Mutation = {
         } catch (error) {
             // custom error for client
             if (error.code === 11000) {
-
-                const pattern = {
-                    username: 'имя',
-                    email: 'почта',
-                }
-
-                const name =  pattern[Object.keys(error.keyValue)];
+                const name =  Object.keys(error.keyValue)[0];
                 const value = Object.values(error.keyValue);
 
-                const message = `${name} ${value} уже существует`;
+                const message = `${name}: ${value} уже существует`;
                 throw new GraphQLError(message, {
                     extensions: {
                         code: '500',
@@ -195,29 +198,55 @@ const Mutation = {
             }
         }
     },
+
     signIn: async (parent, { email, password }) => {
-        if (email) {
-            email = email.trim().toLowerCase();
-        }
 
-        const user = await User.findOne({ email });
-
-        errorNotItem(user, 'Такого пользователя не существует');
-
-        const validPassword = await bcrypt.compare(password, user.password);
-
-        if (!validPassword) {
-            throw new GraphQLError('Введен неккоректный пароль', {
+        try {
+            if (!email) {
+                throw new GraphQLError('email: поле электронная почта является обязательным');
+            }
+    
+            if (!password) {
+                throw new GraphQLError('password: поле пароль является обязательным');
+            }
+    
+            if (password.length < 5) {
+                throw new GraphQLError('password: поле пароль не может содержать меньше 5 символов');
+            }
+    
+            if (email) {
+                email = email.trim().toLowerCase();
+            }
+    
+            const user = await User.findOne({ email });
+    
+            errorNotItem(user, 'email: пользователя с такой почтой не существует');
+    
+            const validPassword = await bcrypt.compare(password, user.password);
+    
+            if (!validPassword) {
+                throw new GraphQLError('password: пароль введен неверный', {
+                    extensions: {
+                        code: '401',
+                        myExtension: "foo",
+                    },
+                });
+            }
+    
+            // return token
+            return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+        } catch (error) {
+            throw new GraphQLError(error, {
                 extensions: {
-                    code: '401',
+                    code: '500',
                     myExtension: "foo",
                 },
             });
         }
 
-        // return token
-        return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
     },
+
+
     toggleFavorite: async (parent, { id }, { idUser }) => {
 
         errorAuth(idUser);
@@ -293,6 +322,7 @@ const Mutation = {
             );
         }
     },
+
     newComment: async (parent, { content, idAdvert }, { idUser }) => {
 
         errorAuth(idUser);
@@ -314,6 +344,7 @@ const Mutation = {
             });
         }
     },
+
     updateComment: async (parent, { id, content }, { idUser }) => {
 
         errorAuth(idUser);
@@ -345,6 +376,7 @@ const Mutation = {
             });
         }
     },
+
     deleteComment: async (parent, { id }, { idUser }) => {
 
         errorAuth(idUser);
@@ -371,9 +403,25 @@ const Mutation = {
             });
         }
     },
+    
     requestLinkForPassword: async (parent, { email }) => {
         // console.log(email);
         try {
+
+            if (!email) {
+                throw new GraphQLError('email: поле электронная почта является обязательным');
+            }
+
+            // сделать проверку есть ли такая почта
+            // normalize email
+            email = email.trim().toLowerCase();
+
+            const isEmail = await User.findOne({ email });
+
+            if (!isEmail) {
+                throw new GraphQLError('email: пользователя с такой почтой не существует');
+            }
+
             // create link for confirmed by email
             const uniquePath = uuidv4();
             const urlForPassword = `${domain}${port}/changePassword/?email=${email}&path=${uniquePath}`;
@@ -397,6 +445,7 @@ const Mutation = {
             });
 
 
+            // тут оборачивать в try catch не требуется так как регистрируются люди с существующими почтами
             let info = await transporter.sendMail({
                 from: userLogin,
                 to: email, 
@@ -411,7 +460,12 @@ const Mutation = {
             // console.log(urlForPassword);
             return true;
         } catch (error) {
-            return false;
+            throw new GraphQLError(error, {
+                extensions: {
+                    code: '500',
+                    myExtension: "foo",
+                },
+            });
         }
     },
 };
