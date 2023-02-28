@@ -13,7 +13,7 @@ const comment = new mongoose.Schema(
         },
         advert: {
             type: mongoose.Schema.Types.ObjectId,
-            // связь с айди юзера
+            // связь с айди объявления
             ref: 'Advert',
             required: true, 
         },

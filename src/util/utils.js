@@ -72,6 +72,15 @@ const isEmptyObject = (obj) => {
     return true;
 }
 
+// user object
+const getUser = (user) => {
+    if (typeof user !== 'object') {
+        return;
+    }
+    delete user.password
+    return user;
+}
+
 module.exports = {
     getUserId,
     errorAuth,
@@ -79,4 +88,5 @@ module.exports = {
     error403,
     errorNotItem,
     isEmptyObject,
+    getUser,
 }

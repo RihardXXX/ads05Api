@@ -2,7 +2,7 @@ const { Advert, User, Comment, GenerateLink, ChangePassword } = require('../mode
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { gravatar } = require('../util/gravatar');
-const { errorAuth, errorField, errorNotItem, error403 } = require('../util/utils');
+const { errorAuth, errorField, errorNotItem, error403, getUser } = require('../util/utils');
 const { GraphQLError } = require('graphql');
 const mongoose = require('mongoose');
 const nodemailer = require("nodemailer");
@@ -174,7 +174,11 @@ const Mutation = {
             }
 
             // return token
-            return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+            // return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+            return {
+                user: getUser(user),
+                token: jwt.sign({ id: user._id }, process.env.JWT_SECRET),
+            };
         } catch (error) {
             // custom error for client
             if (error.code === 11000) {
@@ -234,7 +238,11 @@ const Mutation = {
             }
     
             // return token
-            return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+            // return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+            return {
+                user: getUser(user),
+                token: jwt.sign({ id: user._id }, process.env.JWT_SECRET),
+            };
         } catch (error) {
             throw new GraphQLError(error, {
                 extensions: {

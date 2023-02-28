@@ -24,6 +24,7 @@ const typeDefs = gql`
         watch: Int!
         createdAt: DateTime!
         updatedAt: DateTime!
+        comments: [Comment]!
     },
     type Comment {
         _id: ID!
@@ -51,6 +52,18 @@ const typeDefs = gql`
         limit: Int!
         page: Int!
     }
+    type BaseUserRes {
+        _id: ID!
+        username: String!
+        email: String!
+        avatar: String!
+        createdAt: String!
+        updatedAt: String!
+    }
+    type ResponseSignIn {
+        token: String!
+        user: BaseUserRes!
+    }
     input Advertfield {
         name: String
         category: String
@@ -73,8 +86,8 @@ const typeDefs = gql`
         newAdvert(name: String!, content: String!, category: String!, contact: String): Advert!
         updateAdvert(id: ID!, fields: Advertfield): Advert!
         deleteAdvert(id: ID!): Boolean!
-        signUp(username: String!, email: String!, password: String!): String!
-        signIn(email: String!, password: String!): String!
+        signUp(username: String!, email: String!, password: String!): ResponseSignIn!
+        signIn(email: String!, password: String!): ResponseSignIn!
         toggleFavorite(id: ID!): Advert!
         newComment(content: String!, idAdvert: ID!): Comment!
         updateComment(id: ID!, content: String!): Comment!
