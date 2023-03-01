@@ -476,6 +476,22 @@ const Mutation = {
             });
         }
     },
+
+    autoAuth: async (parent, args, { idUser }) => {
+        errorAuth(idUser);
+        try {
+            const user = await User.findById(idUser);
+
+            return getUser(user);
+        } catch (error) {
+            throw new GraphQLError(error, {
+                extensions: {
+                    code: '500',
+                    myExtension: "foo",
+                },
+            });
+        }
+    },
 };
 
 module.exports = Mutation;

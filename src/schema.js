@@ -88,6 +88,7 @@ const typeDefs = gql`
         deleteAdvert(id: ID!): Boolean!
         signUp(username: String!, email: String!, password: String!): ResponseSignIn!
         signIn(email: String!, password: String!): ResponseSignIn!
+        autoAuth: BaseUserRes
         toggleFavorite(id: ID!): Advert!
         newComment(content: String!, idAdvert: ID!): Comment!
         updateComment(id: ID!, content: String!): Comment!
