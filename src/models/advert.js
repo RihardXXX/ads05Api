@@ -5,6 +5,11 @@ const mongoosePaginate = require('mongoose-paginate-v2');
 // Определяем схему БД объявление
 const advert = new mongoose.Schema(
     {
+        // _id: {  
+        //     type: mongoose.Schema.Types.ObjectId,
+        //     required: true, 
+        //     unique: true,
+        // },
         author: {  
             type: mongoose.Schema.Types.ObjectId,
             // связь с айди юзера

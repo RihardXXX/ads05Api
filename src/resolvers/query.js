@@ -1,11 +1,12 @@
 const { Advert, User, Comment } = require('../models');
 const { GraphQLError } = require('graphql');
-const { errorAuth, errorField, errorNotItem, error403, isEmptyObject } = require('../util/utils');
+const { errorAuth, errorField, errorNotItem, error403, isEmptyObject, getUser } = require('../util/utils');
 const nodemailer = require("nodemailer");
 // Берем с переменной окружения порт, путь к апи, путь подключения в БД
 require('dotenv').config();
 
 const Query = {
+
     ads: async (parent, args) => {
         try {
             return await Advert.find().limit(100);
@@ -13,6 +14,7 @@ const Query = {
             console.log('Query/ads error: ', error);
         }
     },
+
     advert: async (parent, args) => {
         try {
             const advert = await Advert.findById(args.id);
@@ -24,6 +26,7 @@ const Query = {
             console.log('Query/advert error: ', error);
         }
     },
+
     advertFeed: async (parent, { offset, limit }) => {
         const myCustomLabels = {
             totalDocs: 'totalAdverts',
@@ -50,6 +53,7 @@ const Query = {
                 hasNextPage: res.hasNextPage,
                 nextPage: res.nextPage,
                 adverts: res.adverts,
+                // offset: Number(res.offset) + Number(res.limit),
                 offset: res.offset,
                 limit: res.limit,
                 page: res.page,
@@ -63,6 +67,7 @@ const Query = {
             });
         }
     },
+
      // Добавляем в существующий объект module.exports следующее:
     user: async (parent, { username }) => {
         // Находим пользователя по имени
@@ -77,6 +82,7 @@ const Query = {
             });
         }
     },
+
     userForId: async (parent, { id }) => {
         try {
             return await User.findById(id);
@@ -89,6 +95,7 @@ const Query = {
             });
         }
     },
+
     users: async (parent, args) => {
         // Находим всех пользователей
         try {
@@ -102,10 +109,14 @@ const Query = {
             });
         }
     },
+
     me: async (parent, args, { idUser }) => {
         // Находим пользователя по текущему пользовательскому контексту
+        errorAuth(idUser);
         try {
-            return await User.findById(idUser);
+            const user = await User.findById(idUser);
+
+            return getUser(user);
         } catch (error) {
             throw new GraphQLError('Пользователь такой не найден', {
                 extensions: {
@@ -115,6 +126,7 @@ const Query = {
             });
         }
     },
+
     comment: async (parent, { id }) => {
         errorNotItem(id, 'Требуется айди комментария');
 
@@ -129,6 +141,7 @@ const Query = {
             });
         }
     },
+
     commentFeed: async (parent, { offset, limit, idAdvert }) => {
 
         const myCustomLabels = {
@@ -175,6 +188,7 @@ const Query = {
             });
         }
     },
+
     testMailer: async (parent, { email, message }) => {
 
         try {
@@ -214,6 +228,23 @@ const Query = {
             return false;
         }
     },
+
+    // autoAuth: async (parent, args, { idUser }) => {
+    //     errorAuth(idUser);
+    //     try {
+    //         const user = await User.findById(idUser);
+
+    //         return getUser(user);
+    //     } catch (error) {
+    //         throw new GraphQLError(error, {
+    //             extensions: {
+    //                 code: '500',
+    //                 myExtension: "foo",
+    //             },
+    //         });
+    //     }
+    // },
+
 };
 
 module.exports = Query;

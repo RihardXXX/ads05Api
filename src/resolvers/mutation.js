@@ -23,7 +23,7 @@ const Mutation = {
 
         errorField(content, category, 'Не переданы поля контент и категория');
 
-        return await Advert.create(
+        const advert = await Advert.create(
             {
                 author:  mongoose.Types.ObjectId(idUser),
                 name,
@@ -32,6 +32,20 @@ const Mutation = {
                 contact,
             }
         );
+
+        // const advert = new Advert(
+        //     {
+        //         author:  mongoose.Types.ObjectId(idUser),
+        //         name,
+        //         category,
+        //         content,
+        //         contact,
+        //     }
+        // );
+
+        // await advert.save();
+
+        return advert;
     },
 
     deleteAdvert: async (parent, { id }, { idUser }) => {
@@ -467,22 +481,6 @@ const Mutation = {
 
             // console.log(urlForPassword);
             return true;
-        } catch (error) {
-            throw new GraphQLError(error, {
-                extensions: {
-                    code: '500',
-                    myExtension: "foo",
-                },
-            });
-        }
-    },
-
-    autoAuth: async (parent, args, { idUser }) => {
-        errorAuth(idUser);
-        try {
-            const user = await User.findById(idUser);
-
-            return getUser(user);
         } catch (error) {
             throw new GraphQLError(error, {
                 extensions: {

@@ -77,7 +77,7 @@ const typeDefs = gql`
         user(username: String!): User
         userForId(id: ID!): User
         users: [User!]!
-        me: User!
+        me: BaseUserRes
         comment(id: ID!): Comment!
         commentFeed(offset: Int!, limit: Int!, idAdvert: ID!): CommentFeed
         testMailer(email: String!, message: String!): Boolean!
@@ -88,8 +88,7 @@ const typeDefs = gql`
         deleteAdvert(id: ID!): Boolean!
         signUp(username: String!, email: String!, password: String!): ResponseSignIn!
         signIn(email: String!, password: String!): ResponseSignIn!
-        autoAuth: BaseUserRes
-        toggleFavorite(id: ID!): Advert!
+        toggleFavorite(id: String!): Advert!
         newComment(content: String!, idAdvert: ID!): Comment!
         updateComment(id: ID!, content: String!): Comment!
         deleteComment(id: ID!): Boolean
