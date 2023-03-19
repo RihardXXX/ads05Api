@@ -16,7 +16,7 @@ const typeDefs = gql`
         _id: ID!
         author: User!
         name: String!
-        category: String!
+        category: [String]!
         content: String!
         contact: String
         favoriteCount: Int!
@@ -57,7 +57,7 @@ const typeDefs = gql`
         username: String!
         email: String!
         avatar: String!
-        createdAt: String!
+        createdAt: DateTime!
         updatedAt: String!
     }
     type ResponseSignIn {
@@ -66,7 +66,7 @@ const typeDefs = gql`
     }
     input Advertfield {
         name: String
-        category: String
+        category: [String]
         content: String
         contact: String
     },
@@ -74,6 +74,8 @@ const typeDefs = gql`
         ads: [Advert!]!
         advert(id: String!): Advert!
         advertFeed(offset: Int!, limit: Int!): AdvertFeed
+        advertFeedFavorite(offset: Int!, limit: Int!): AdvertFeed
+        advertFeedMy(offset: Int!, limit: Int!): AdvertFeed
         user(username: String!): User
         userForId(id: ID!): User
         users: [User!]!
@@ -83,7 +85,7 @@ const typeDefs = gql`
         testMailer(email: String!, message: String!): Boolean!
     },
     type Mutation {
-        newAdvert(name: String!, content: String!, category: String!, contact: String): Advert!
+        newAdvert(name: String!, content: String!, category: [String]!, contact: String): Advert!
         updateAdvert(id: ID!, fields: Advertfield): Advert!
         deleteAdvert(id: ID!): Boolean!
         signUp(username: String!, email: String!, password: String!): ResponseSignIn!

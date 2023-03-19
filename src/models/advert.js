@@ -17,7 +17,7 @@ const advert = new mongoose.Schema(
             required: true, 
         },
         name: { type: String, required: true },
-        category: { type: String, required: true },
+        category: { type: Array, default: [], required: true },
         content: { type: String, required: true },
         favoriteCount: { type: Number, default: 0 },
         favoritedBy: [

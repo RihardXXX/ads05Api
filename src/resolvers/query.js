@@ -68,6 +68,90 @@ const Query = {
         }
     },
 
+    advertFeedFavorite: async (parent, { offset, limit }, { idUser }) => {
+        const myCustomLabels = {
+            totalDocs: 'totalAdverts',
+            docs: 'adverts',
+        };
+          
+        const options = {
+            offset,
+            limit,
+            customLabels: myCustomLabels,
+        };
+
+        try {
+            const res = await Advert.paginate({ favoritedBy: { 
+                $in: idUser
+            }}, options);
+
+            if (isEmptyObject(res)) {
+                return {
+                    message: 'отсутствуют объявления'
+                }
+            }
+    
+            return {
+                totalAdverts: res.totalAdverts,
+                hasNextPage: res.hasNextPage,
+                nextPage: res.nextPage,
+                adverts: res.adverts,
+                // offset: Number(res.offset) + Number(res.limit),
+                offset: res.offset,
+                limit: res.limit,
+                page: res.page,
+            }
+        } catch (error) {
+            throw new GraphQLError('Ошибка при запросе на получение фида объявлений', {
+                extensions: {
+                    code: '500',
+                    myExtension: "foo",
+                },
+            });
+        }
+    },
+
+    advertFeedMy: async (parent, { offset, limit }, { idUser }) => {
+        const myCustomLabels = {
+            totalDocs: 'totalAdverts',
+            docs: 'adverts',
+        };
+          
+        const options = {
+            offset,
+            limit,
+            customLabels: myCustomLabels,
+        };
+
+        try {
+            const res = await Advert.paginate({ author: { $eq: idUser } }, options);
+
+            if (isEmptyObject(res)) {
+                return {
+                    message: 'отсутствуют объявления'
+                }
+            }
+    
+            return {
+                totalAdverts: res.totalAdverts,
+                hasNextPage: res.hasNextPage,
+                nextPage: res.nextPage,
+                adverts: res.adverts,
+                // offset: Number(res.offset) + Number(res.limit),
+                offset: res.offset,
+                limit: res.limit,
+                page: res.page,
+            }
+        } catch (error) {
+            throw new GraphQLError('Ошибка при запросе на получение фида объявлений', {
+                extensions: {
+                    code: '500',
+                    myExtension: "foo",
+                },
+            });
+        }
+    },
+
      // Добавляем в существующий объект module.exports следующее:
     user: async (parent, { username }) => {
         // Находим пользователя по имени
