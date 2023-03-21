@@ -59,6 +59,7 @@ const typeDefs = gql`
         avatar: String!
         createdAt: DateTime!
         updatedAt: String!
+        confirmed: Boolean!
     }
     type ResponseSignIn {
         token: String!
